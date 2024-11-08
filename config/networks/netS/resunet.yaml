@@ -1,0 +1,26 @@
+_target_: mislight.networks.nets.dynunet.DynUNet
+spatial_dims: ${data.dataset.spatial_dims}
+in_channels: ${data.dataset.image_channels}
+out_channels: ${data.dataset.num_classes}
+kernel_size:
+- 3
+- 3 
+- 3
+- 3
+strides:
+- 1
+- 2
+- 2
+- 2
+filters:
+- 32
+- 64
+- 128
+- 256
+res_block: true
+num_blocks:
+- 1
+- 2
+- 2
+- 2
+norm_name: batch

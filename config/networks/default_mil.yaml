@@ -1,0 +1,7 @@
+defaults:
+  - _self_
+  - netB: resnet50
+  - netA: attention256
+  - netC: clf_mlp_ad
+
+intermediate_channels: 256

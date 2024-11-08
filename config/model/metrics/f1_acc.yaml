@@ -1,0 +1,5 @@
+F1__ACC:
+  _target_: utils.metrics.ProbConfusionMatrixMetric
+  metric_name:
+  - f1
+  - acc

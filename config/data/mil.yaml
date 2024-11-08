@@ -1,0 +1,22 @@
+defaults:
+  - default
+
+dataloader:
+  train:
+    collate_fn:
+      _target_: data.utils.CollateListData
+      keys:
+      - image
+      dim: -1
+  valid:
+    collate_fn:
+      _target_: data.utils.CollateListData
+      keys:
+      - image
+      dim: -1
+  test:
+    collate_fn:
+      _target_: data.utils.CollateListData
+      keys:
+      - image
+      dim: -1

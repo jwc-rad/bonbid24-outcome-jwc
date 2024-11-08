@@ -1,0 +1,3 @@
+Dice:
+  _target_: monai.metrics.DiceMetric
+  include_background: false

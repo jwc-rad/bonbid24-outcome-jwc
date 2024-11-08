@@ -1,0 +1,253 @@
+dataset_target: data.dataset.BONBIDClassificationDatasetV2
+spatial_dims: 2
+image_channels: 2
+num_classes: 2
+image_target_size: 96
+image_target_padded_size: 160
+image_extension: nii.gz
+label_extension: nii.gz
+select_channels:
+- 0
+- 1
+cv_split: 5
+cv_fold: 0
+split_seed: 12345
+image_dir: ${paths.data_root_dir}/seg/nnunet_iso1.5625_fg/imagesTt
+label_dir: null
+#label_dir: ${paths.data_root_dir}/seg/nnunet_iso1.5625/labelsTr
+#table_file: ${paths.data_root_dir}/tab/outcome.pkl
+#dataset_file: null
+dataset_file: ${paths.data_root_dir}/ds/split240928_n5_r12345.pkl
+train:
+  _target_: ${..dataset_target}
+  phase: train
+  image_dir: ${..image_dir}
+  label_dir: ${..label_dir}
+  cv_fold: ${..cv_fold}
+  cv_split: ${..cv_split}
+  split_seed: ${..split_seed}
+  image_extension: ${..image_extension}
+  label_extension: ${..label_extension}
+  select_channels: ${..select_channels}
+  dataset_file: ${..dataset_file}
+  images_per_bag: 12
+  iterations_per_epoch: null
+  transform:
+    load_image:
+      _target_: monai.transforms.LoadImaged
+      keys: image
+      image_only: true
+    channel_first:
+      _target_: monai.transforms.EnsureChannelFirstd
+      keys:
+      - image
+    normalize:
+      _target_: monai.transforms.NormalizeIntensityd
+      keys: image
+      subtrahend:
+      - 0
+      - 0
+      divisor:
+      - 1000
+      - 1
+      channel_wise: true
+    pick_slice:
+      _target_: monai.transforms.RandSpatialCropd
+      keys:
+      - image
+      roi_size:
+      - -1
+      - -1
+      - ${data.dataset.train.images_per_bag}
+    flip0:
+      _target_: monai.transforms.RandFlipd
+      keys:
+      - image
+      prob: 0
+      spatial_axis: 0
+    flip1:
+      _target_: monai.transforms.RandFlipd
+      keys:
+      - image
+      prob: 0
+      spatial_axis: 1
+    rot90:
+      _target_: monai.transforms.RandRotate90d
+      keys:
+      - image
+      prob: 0
+      max_k: 3
+    resize:
+      _target_: monai.transforms.Resized
+      keys:
+      - image
+      spatial_size:
+      - ${data.dataset.image_target_size}
+      - ${data.dataset.image_target_size}
+      - -1
+      size_mode: all
+      mode: trilinear
+    pad:
+      _target_: monai.transforms.SpatialPadd
+      keys: image
+      spatial_size:
+      - ${data.dataset.image_target_padded_size}
+      - ${data.dataset.image_target_padded_size}
+      - -1
+    zoom:
+      _target_: monai.transforms.RandZoomd
+      keys: image
+      prob: 0
+      min_zoom: 
+      - 0.8
+      - 0.8
+      - 1
+      max_zoom: 
+      - 1.25
+      - 1.25
+      - 1
+      mode: trilinear
+      padding_mode: constant
+    reresize:
+      _target_: monai.transforms.Resized
+      keys:
+      - image
+      spatial_size:
+      - ${data.dataset.image_target_size}
+      - ${data.dataset.image_target_size}
+      - -1
+      size_mode: all
+      mode: trilinear
+    crop:
+      _target_: monai.transforms.RandSpatialCropd
+      keys:
+      - image
+      roi_size:
+      - ${data.dataset.image_target_size}
+      - ${data.dataset.image_target_size}
+      - ${data.dataset.train.images_per_bag}
+  transform_seed: null
+
+valid:
+  _target_: ${..dataset_target}
+  phase: valid
+  image_dir: ${..image_dir}
+  label_dir: ${..label_dir}
+  cv_fold: ${..cv_fold}
+  cv_split: ${..cv_split}
+  split_seed: ${..split_seed}
+  image_extension: ${..image_extension}
+  label_extension: ${..label_extension}
+  select_channels: ${..select_channels}
+  dataset_file: ${..dataset_file}
+  images_per_bag: -1
+  iterations_per_epoch: null
+  transform:
+    load_image:
+      _target_: monai.transforms.LoadImaged
+      keys: image
+      image_only: true
+    channel_first:
+      _target_: monai.transforms.EnsureChannelFirstd
+      keys:
+      - image
+    normalize:
+      _target_: monai.transforms.NormalizeIntensityd
+      keys: image
+      subtrahend:
+      - 0
+      - 0
+      divisor:
+      - 1000
+      - 1
+      channel_wise: true
+    resize:
+      _target_: monai.transforms.Resized
+      keys:
+      - image
+      spatial_size:
+      - ${data.dataset.image_target_size}
+      - ${data.dataset.image_target_size}
+      - -1
+      size_mode: all
+      mode: trilinear
+    pad:
+      _target_: monai.transforms.SpatialPadd
+      keys: image
+      spatial_size:
+      - ${data.dataset.image_target_padded_size}
+      - ${data.dataset.image_target_padded_size}
+      - -1
+    reresize:
+      _target_: monai.transforms.Resized
+      keys:
+      - image
+      spatial_size:
+      - ${data.dataset.image_target_size}
+      - ${data.dataset.image_target_size}
+      - ${data.dataset.valid.images_per_bag}
+      size_mode: all
+      mode: trilinear
+  transform_seed: null
+
+test:
+  _target_: ${..dataset_target}
+  phase: test
+  image_dir: ${..image_dir}
+  label_dir: ${..label_dir}
+  cv_fold: ${..cv_fold}
+  cv_split: ${..cv_split}
+  split_seed: ${..split_seed}
+  image_extension: ${..image_extension}
+  label_extension: ${..label_extension}
+  select_channels: ${..select_channels}
+  dataset_file: ${..dataset_file}
+  images_per_bag: -1
+  iterations_per_epoch: null
+  transform:
+    load_image:
+      _target_: monai.transforms.LoadImaged
+      keys: image
+      image_only: true
+    channel_first:
+      _target_: monai.transforms.EnsureChannelFirstd
+      keys:
+      - image
+    normalize:
+      _target_: monai.transforms.NormalizeIntensityd
+      keys: image
+      subtrahend:
+      - 0
+      - 0
+      divisor:
+      - 1000
+      - 1
+      channel_wise: true
+    resize:
+      _target_: monai.transforms.Resized
+      keys:
+      - image
+      spatial_size:
+      - ${data.dataset.image_target_size}
+      - ${data.dataset.image_target_size}
+      - -1
+      size_mode: all
+      mode: trilinear
+    pad:
+      _target_: monai.transforms.SpatialPadd
+      keys: image
+      spatial_size:
+      - ${data.dataset.image_target_padded_size}
+      - ${data.dataset.image_target_padded_size}
+      - -1
+    reresize:
+      _target_: monai.transforms.Resized
+      keys:
+      - image
+      spatial_size:
+      - ${data.dataset.image_target_size}
+      - ${data.dataset.image_target_size}
+      - ${data.dataset.test.images_per_bag}
+      size_mode: all
+      mode: trilinear
+  transform_seed: null

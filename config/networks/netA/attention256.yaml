@@ -1,0 +1,4 @@
+_target_: networks.aggregate.Attention
+in_channels: ${networks.intermediate_channels}
+hidden_channels: 1024
+reduce_channels: null

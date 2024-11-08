@@ -1,0 +1,3 @@
+_target_: networks.timm.ConvNeXtV2_tiny
+in_channels: ${data.dataset.image_channels}
+out_channels: ${networks.intermediate_channels}

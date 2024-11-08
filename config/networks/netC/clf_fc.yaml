@@ -1,0 +1,5 @@
+_target_: networks.classifier.MLP
+in_channels: ${networks.intermediate_channels}
+out_channels: ${data.dataset.num_classes_aux}
+hidden_channels: null
+dropout: null

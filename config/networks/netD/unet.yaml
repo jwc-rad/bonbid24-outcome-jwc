@@ -1,0 +1,22 @@
+_target_: mislight.networks.nets.dynunet.DynUNetDecoder
+spatial_dims: ${data.dataset.spatial_dims}
+#in_channels: ${data.dataset.image_channels}
+out_channels: ${data.dataset.num_classes}
+kernel_size:
+#- 3
+- 3 
+- 3
+- 3
+strides:
+#- 1
+- 2
+- 2
+- 2
+filters:
+- 256
+- 128
+- 64
+- 32
+upsample_kernel_size: ${.kernel_size}
+norm_name: batch
+dropout: null

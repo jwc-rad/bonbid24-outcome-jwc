@@ -1,0 +1,3 @@
+_target_: networks.tvm.ShuffleNet_V2_X1_5
+in_channels: ${data.dataset.image_channels}
+out_channels: ${networks.intermediate_channels}

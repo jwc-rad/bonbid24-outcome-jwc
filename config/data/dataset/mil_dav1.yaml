@@ -1,0 +1,8 @@
+train:
+  transform:
+    flip0:
+      prob: 0.5
+    flip1:
+      prob: 0.5
+    rot90:
+      prob: 0.75

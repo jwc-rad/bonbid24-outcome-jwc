@@ -1,0 +1,7 @@
+defaults:
+  - _self_
+  - netD: unet
+  - netE: unet
+  - netC: flatclf_fc
+
+intermediate_channels: 256

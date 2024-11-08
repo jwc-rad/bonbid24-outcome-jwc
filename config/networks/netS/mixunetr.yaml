@@ -1,0 +1,29 @@
+_target_: networks.mix_unetr.MixUNETR
+spatial_dims: ${data.dataset.spatial_dims}
+in_channels: ${data.dataset.image_channels}
+out_channels: ${data.dataset.num_classes}
+patch_sizes: 3
+strides: 2 
+num_stages: 4
+embed_dims: 32
+num_heads:
+- 1
+- 2
+- 5
+- 8
+num_layers:
+- 2
+- 2
+- 2
+- 2
+sr_ratios:
+- 8
+- 4
+- 2
+- 1
+mlp_ratios: 4
+qkv_bias: true
+drop: 0
+attn_drop: 0
+drop_path: 0.1
+#head_act: tanh

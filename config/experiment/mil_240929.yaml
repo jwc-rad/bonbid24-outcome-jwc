@@ -1,0 +1,88 @@
+# @package _global_
+defaults:
+  - _self_
+  - override /data: default
+  - override /data/dataset: mil_240927
+  - override /model: mil
+  - override /networks: default_mil
+  #- override /scheduler: step_cosinewarmrestart
+  - override /scheduler: epoch_cosine
+  - override /optimizer: adam
+  - override /callbacks:
+    - learning_rate_monitor
+    - model_checkpoint
+    #- valid_save_results
+  #- override /pretrained: null
+  #- override /paths: kdh
+
+hydra:
+  job:
+    name: ${task_name}
+    config:
+      override_dirname:
+        exclude_keys:
+          - logger.wandb.tags
+  output_subdir: config
+  run:
+    dir: runs/${hydra.job.name}/${now:%Y-%m-%d}_${now:%H-%M-%S}
+  sweep:
+    dir: runs/${hydra.job.name}/${now:%Y-%m-%d}_${now:%H-%M-%S}
+    subdir: ${hydra.job.override_dirname}
+
+logger:
+  wandb:
+    project: bonbidmil-2409
+
+task_name: bonbidmil-2409
+train: True
+valid: False
+test: False
+
+seed:
+  seed: 12345
+  deterministic: true
+
+trainer:
+  #max_steps: 12500
+  max_epochs: 300
+  #val_check_interval: 1
+  check_val_every_n_epoch: 1
+  log_every_n_steps: 10
+  #precision: 32
+  #detect_anomaly: true
+
+optimizer:
+  lr: 3e-5
+
+#scheduler:
+#  scheduler:
+#    T_0: 50
+    #warmup_t: 1000
+    #warmup_factor_init: 0
+    #T_0: 1250
+ 
+callbacks:   
+  model_checkpoint:
+    every_n_epochs: 1
+    filename: best_metric1__epoch={epoch:05d}_step={step:08d}_val_auroc={metrics/valid_AUROC:.8f}
+    save_weights_only: True
+    auto_insert_metric_name: False
+    save_top_k: 1
+    monitor: metrics/valid_AUROC
+    mode: max
+    save_last: False
+  learning_rate_monitor:
+    logging_interval: step
+
+data:
+  dataloader:
+    num_workers: 4
+    batch_size: 4
+    batch_size_inference: 1
+    persistent_workers: False
+
+model:
+  minibatch: ${data.dataset.train.images_per_bag}
+    #ASD:
+    #  _target_: monai.metrics.SurfaceDistanceMetric
+    #  include_background: false

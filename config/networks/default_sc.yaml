@@ -1,0 +1,6 @@
+defaults:
+  - _self_
+  - netS: unetaux
+  - netC: clf_fc
+
+intermediate_channels: 256

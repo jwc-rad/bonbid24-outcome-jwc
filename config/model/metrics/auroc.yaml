@@ -1,0 +1,2 @@
+AUROC:
+  _target_: monai.metrics.ROCAUCMetric

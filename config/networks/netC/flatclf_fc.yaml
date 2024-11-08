@@ -1,0 +1,6 @@
+_target_: networks.classifier.FlatMLP
+spatial_dims: ${data.dataset.spatial_dims}
+in_channels: ${networks.intermediate_channels}
+out_channels: ${data.dataset.num_classes_aux}
+hidden_channels: null
+dropout: null

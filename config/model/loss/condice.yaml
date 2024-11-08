@@ -1,0 +1,3 @@
+_target_: mislight.losses.consistency.DiceConLoss
+include_background: true
+softmax: true

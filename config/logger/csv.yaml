@@ -1,0 +1,7 @@
+defaults:
+  - _self_
+
+csv:
+  _target_: lightning.pytorch.loggers.CSVLogger
+  save_dir: ${paths.output_dir}
+  name: csv_logs

@@ -1,0 +1,12 @@
+- experiment=mil_240929
+- +logger.wandb.tags=[xprefsl,nres18d5,lce,dipav1]
+- data/dataset=[mil_241007,mil_ds_fg,mil_dav1]
+- +model/loss@model.loss_cls=ce
+- +model/metrics=[f1_acc,auroc]
+- networks/netB=resnet18
+- networks.netC.dropout=0.5
+- optimizer.lr=3e-06
+- trainer.max_epochs=400
+- data.dataset.image_target_size=96
+- data.dataset.image_target_padded_size=160
+- data.dataset.cv_fold=1

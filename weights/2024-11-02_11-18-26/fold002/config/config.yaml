@@ -1,0 +1,387 @@
+task_name: bonbidmil-2409
+train: true
+valid: false
+test: false
+data:
+  _target_: mislight.data.base_datamodule.BaseDataModule
+  dataloader:
+    batch_size: 4
+    batch_size_inference: 1
+    num_workers: 4
+    persistent_workers: false
+    pin_memory: true
+    drop_last: false
+    train:
+      _target_: torch.utils.data.DataLoader
+      shuffle: true
+      batch_size: ${..batch_size}
+      drop_last: ${..drop_last}
+      num_workers: ${..num_workers}
+      persistent_workers: ${..persistent_workers}
+      pin_memory: ${..pin_memory}
+    valid:
+      _target_: torch.utils.data.DataLoader
+      shuffle: false
+      batch_size: ${..batch_size_inference}
+      drop_last: ${..drop_last}
+      num_workers: ${..num_workers}
+      persistent_workers: ${..persistent_workers}
+      pin_memory: ${..pin_memory}
+    test:
+      _target_: torch.utils.data.DataLoader
+      shuffle: false
+      batch_size: ${..batch_size_inference}
+      drop_last: ${..drop_last}
+      num_workers: ${..num_workers}
+      persistent_workers: ${..persistent_workers}
+      pin_memory: ${..pin_memory}
+  dataset:
+    dataset_target: data.dataset.BONBIDClassificationDatasetV2
+    spatial_dims: 2
+    image_channels: 2
+    num_classes: 2
+    image_target_size: 96
+    image_target_padded_size: 160
+    image_extension: nii.gz
+    label_extension: nii.gz
+    select_channels:
+    - 0
+    - 1
+    cv_split: 5
+    cv_fold: 2
+    split_seed: 12345
+    image_dir: ${paths.data_root_dir}/seg/nnunet_fg/imagesTt
+    label_dir: null
+    dataset_file: ${paths.data_root_dir}/ds/split240928_n5_r12345.pkl
+    train:
+      _target_: ${..dataset_target}
+      phase: train
+      image_dir: ${..image_dir}
+      label_dir: ${..label_dir}
+      cv_fold: ${..cv_fold}
+      cv_split: ${..cv_split}
+      split_seed: ${..split_seed}
+      image_extension: ${..image_extension}
+      label_extension: ${..label_extension}
+      select_channels: ${..select_channels}
+      dataset_file: ${..dataset_file}
+      images_per_bag: 12
+      iterations_per_epoch: null
+      transform:
+        load_image:
+          _target_: monai.transforms.LoadImaged
+          keys: image
+          image_only: true
+        channel_first:
+          _target_: monai.transforms.EnsureChannelFirstd
+          keys:
+          - image
+        normalize:
+          _target_: monai.transforms.NormalizeIntensityd
+          keys: image
+          subtrahend:
+          - 0
+          - 0
+          divisor:
+          - 1000
+          - 1
+          channel_wise: true
+        pick_slice:
+          _target_: monai.transforms.RandSpatialCropd
+          keys:
+          - image
+          roi_size:
+          - -1
+          - -1
+          - ${data.dataset.train.images_per_bag}
+        flip0:
+          _target_: monai.transforms.RandFlipd
+          keys:
+          - image
+          prob: 0.5
+          spatial_axis: 0
+        flip1:
+          _target_: monai.transforms.RandFlipd
+          keys:
+          - image
+          prob: 0.5
+          spatial_axis: 1
+        rot90:
+          _target_: monai.transforms.RandRotate90d
+          keys:
+          - image
+          prob: 0.75
+          max_k: 3
+        resize:
+          _target_: monai.transforms.Resized
+          keys:
+          - image
+          spatial_size:
+          - ${data.dataset.image_target_size}
+          - ${data.dataset.image_target_size}
+          - -1
+          size_mode: all
+          mode: trilinear
+        pad:
+          _target_: monai.transforms.SpatialPadd
+          keys: image
+          spatial_size:
+          - ${data.dataset.image_target_padded_size}
+          - ${data.dataset.image_target_padded_size}
+          - -1
+        zoom:
+          _target_: monai.transforms.RandZoomd
+          keys: image
+          prob: 0
+          min_zoom:
+          - 0.8
+          - 0.8
+          - 1
+          max_zoom:
+          - 1.25
+          - 1.25
+          - 1
+          mode: trilinear
+          padding_mode: constant
+        reresize:
+          _target_: monai.transforms.Resized
+          keys:
+          - image
+          spatial_size:
+          - ${data.dataset.image_target_size}
+          - ${data.dataset.image_target_size}
+          - -1
+          size_mode: all
+          mode: trilinear
+        crop:
+          _target_: monai.transforms.RandSpatialCropd
+          keys:
+          - image
+          roi_size:
+          - ${data.dataset.image_target_size}
+          - ${data.dataset.image_target_size}
+          - ${data.dataset.train.images_per_bag}
+      transform_seed: null
+    valid:
+      _target_: ${..dataset_target}
+      phase: valid
+      image_dir: ${..image_dir}
+      label_dir: ${..label_dir}
+      cv_fold: ${..cv_fold}
+      cv_split: ${..cv_split}
+      split_seed: ${..split_seed}
+      image_extension: ${..image_extension}
+      label_extension: ${..label_extension}
+      select_channels: ${..select_channels}
+      dataset_file: ${..dataset_file}
+      images_per_bag: -1
+      iterations_per_epoch: null
+      transform:
+        load_image:
+          _target_: monai.transforms.LoadImaged
+          keys: image
+          image_only: true
+        channel_first:
+          _target_: monai.transforms.EnsureChannelFirstd
+          keys:
+          - image
+        normalize:
+          _target_: monai.transforms.NormalizeIntensityd
+          keys: image
+          subtrahend:
+          - 0
+          - 0
+          divisor:
+          - 1000
+          - 1
+          channel_wise: true
+        resize:
+          _target_: monai.transforms.Resized
+          keys:
+          - image
+          spatial_size:
+          - ${data.dataset.image_target_size}
+          - ${data.dataset.image_target_size}
+          - -1
+          size_mode: all
+          mode: trilinear
+        pad:
+          _target_: monai.transforms.SpatialPadd
+          keys: image
+          spatial_size:
+          - ${data.dataset.image_target_padded_size}
+          - ${data.dataset.image_target_padded_size}
+          - -1
+        reresize:
+          _target_: monai.transforms.Resized
+          keys:
+          - image
+          spatial_size:
+          - ${data.dataset.image_target_size}
+          - ${data.dataset.image_target_size}
+          - ${data.dataset.valid.images_per_bag}
+          size_mode: all
+          mode: trilinear
+      transform_seed: null
+    test:
+      _target_: ${..dataset_target}
+      phase: test
+      image_dir: ${..image_dir}
+      label_dir: ${..label_dir}
+      cv_fold: ${..cv_fold}
+      cv_split: ${..cv_split}
+      split_seed: ${..split_seed}
+      image_extension: ${..image_extension}
+      label_extension: ${..label_extension}
+      select_channels: ${..select_channels}
+      dataset_file: ${..dataset_file}
+      images_per_bag: -1
+      iterations_per_epoch: null
+      transform:
+        load_image:
+          _target_: monai.transforms.LoadImaged
+          keys: image
+          image_only: true
+        channel_first:
+          _target_: monai.transforms.EnsureChannelFirstd
+          keys:
+          - image
+        normalize:
+          _target_: monai.transforms.NormalizeIntensityd
+          keys: image
+          subtrahend:
+          - 0
+          - 0
+          divisor:
+          - 1000
+          - 1
+          channel_wise: true
+        resize:
+          _target_: monai.transforms.Resized
+          keys:
+          - image
+          spatial_size:
+          - ${data.dataset.image_target_size}
+          - ${data.dataset.image_target_size}
+          - -1
+          size_mode: all
+          mode: trilinear
+        pad:
+          _target_: monai.transforms.SpatialPadd
+          keys: image
+          spatial_size:
+          - ${data.dataset.image_target_padded_size}
+          - ${data.dataset.image_target_padded_size}
+          - -1
+        reresize:
+          _target_: monai.transforms.Resized
+          keys:
+          - image
+          spatial_size:
+          - ${data.dataset.image_target_size}
+          - ${data.dataset.image_target_size}
+          - ${data.dataset.test.images_per_bag}
+          size_mode: all
+          mode: trilinear
+      transform_seed: null
+networks:
+  intermediate_channels: 256
+  netB:
+    _target_: networks.tvm.ResNet18
+    in_channels: ${data.dataset.image_channels}
+    out_channels: ${networks.intermediate_channels}
+  netA:
+    _target_: networks.aggregate.Attention
+    in_channels: ${networks.intermediate_channels}
+    hidden_channels: 1024
+    reduce_channels: null
+  netC:
+    _target_: networks.classifier.MLP
+    in_channels: ${networks.intermediate_channels}
+    out_channels: ${data.dataset.num_classes}
+    hidden_channels:
+    - 1024
+    norm: null
+    act: relu
+    dropout: 0.5
+optimizer:
+  _target_: torch.optim.Adam
+  lr: 3.0e-06
+  betas:
+  - 0.9
+  - 0.999
+  eps: 0.0001
+scheduler:
+  scheduler:
+    _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+    T_max: ${trainer.max_epochs}
+    eta_min: 0
+  interval: epoch
+model:
+  networks: ${networks}
+  optimizer: ${optimizer}
+  scheduler: ${scheduler}
+  logger: ${logger}
+  pretrained: null
+  train: ${train}
+  _target_: model.mil.MILModel
+  lambda_cls: 1
+  loss_cls:
+    _target_: torch.nn.CrossEntropyLoss
+  metrics:
+    F1__ACC:
+      _target_: utils.metrics.ProbConfusionMatrixMetric
+      metric_name:
+      - f1
+      - acc
+    AUROC:
+      _target_: monai.metrics.ROCAUCMetric
+  minibatch: ${data.dataset.train.images_per_bag}
+trainer:
+  _target_: lightning.Trainer
+  default_root_dir: ${paths.output_dir}
+  max_epochs: 400
+  max_steps: -1
+  accelerator: gpu
+  devices: 1
+  precision: 16
+  check_val_every_n_epoch: 1
+  val_check_interval: null
+  log_every_n_steps: 10
+  deterministic: ${seed.deterministic}
+  detect_anomaly: false
+callbacks:
+  learning_rate_monitor:
+    _target_: lightning.pytorch.callbacks.LearningRateMonitor
+    logging_interval: step
+  model_checkpoint:
+    _target_: lightning.pytorch.callbacks.ModelCheckpoint
+    dirpath: ${paths.output_dir}/checkpoint
+    every_n_epochs: 1
+    every_n_train_steps: null
+    filename: best_metric1__epoch={epoch:05d}_step={step:08d}_val_auroc={metrics/valid_AUROC:.8f}
+    save_weights_only: true
+    auto_insert_metric_name: false
+    save_top_k: 1
+    monitor: metrics/valid_AUROC
+    mode: max
+    save_last: false
+logger:
+  wandb:
+    _target_: lightning.pytorch.loggers.WandbLogger
+    save_dir: ${paths.output_dir}
+    project: bonbidmil-2409
+    name: null
+    entity: null
+    reinit: true
+    tags:
+    - xprefsl
+    - nres18d5
+    - lce
+    - dipav1
+paths:
+  output_dir: ${hydra:runtime.output_dir}
+  data_root_dir: /mnt/hdd/jwchoi/data/bonbid2024
+seed:
+  seed: 12345
+  deterministic: true
